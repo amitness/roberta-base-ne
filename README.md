@@ -20,6 +20,7 @@ python train.py dataset.portion=100 model.epochs=1
 
 ## Citations
 Our model has been featured in the following papers:
+- [Nepali Transformers@NLU of Devanagari Script Languages 2025: Detection of Language, Hate Speech and Targets](https://aclanthology.org/2025.chipsal-1.36/) (Khadka et al., CHiPSAL 2025)
 - [Pande, Bishal Debb, et al. "Named Entity Recognition for Nepali Using BERT Based Models." International Conference on Industrial, Engineering and Other Applications of Applied Intelligent Systems. Cham: Springer Nature Switzerland, 2023.](https://link.springer.com/chapter/10.1007/978-3-031-36822-6_8)
 - [Niraula, Nobal, and Jeevan Chapagain. "DanfeNER-Named Entity Recognition in Nepali Tweets." The International FLAIRS Conference Proceedings. Vol. 36. 2023.](https://journals.flvc.org/FLAIRS/article/view/133384)
 - [Timilsina, Sulav, Milan Gautam, and Binod Bhattarai. "NepBERTa: Nepali language model trained in a large corpus." Proceedings of the 2nd conference of the Asia-Pacific chapter of the Association for Computational Linguistics and the 12th International Joint Conference on Natural Language Processing. Association for Computational Linguistics (ACL), 2022.](https://aura.abdn.ac.uk/bitstream/handle/2164/21465/Timilsina_etal_ACLA_NepNERTa_VOR.pdf?sequence=1)
