@@ -1,10 +1,9 @@
+import argparse
 import tempfile
 from multiprocessing import cpu_count
 from pathlib import Path
 
-import hydra
 from datasets import load_dataset
-from omegaconf import DictConfig
 from tokenizers import ByteLevelBPETokenizer
 from transformers import (
     AutoConfig,
@@ -16,15 +15,19 @@ from transformers import (
 )
 
 
-@hydra.main(config_path="config", config_name="default.yaml")
-def train_roberta_base(cfg: DictConfig):
-    output_dir = cfg.output_dir
+def train_roberta_base(args):
+    output_dir = args.output_dir
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    config = AutoConfig.from_pretrained(cfg.model.architecture)
+    config = AutoConfig.from_pretrained(args.model_architecture)
     config.save_pretrained(f"{output_dir}")
 
-    dataset = load_dataset("cc100", lang="ne", split=f"train[:{cfg.dataset.portion}]")
+    dataset = load_dataset(
+        "cc100",
+        lang="ne",
+        split=f"train[:{args.dataset_portion}]",
+        trust_remote_code=True,
+    )
 
     def batch_iterator(batch_size: int = 1000):
         for index in range(0, len(dataset), batch_size):
@@ -34,8 +37,8 @@ def train_roberta_base(cfg: DictConfig):
     tokenizer.train_from_iterator(
         batch_iterator(),
         vocab_size=config.vocab_size,
-        min_frequency=cfg.tokenizer.min_frequency,
-        special_tokens=list(cfg.tokenizer.special_tokens),
+        min_frequency=args.tokenizer_min_frequency,
+        special_tokens=args.special_tokens,
     )
     tokenizer.save(f"{output_dir}/tokenizer.json")
 
@@ -49,19 +52,19 @@ def train_roberta_base(cfg: DictConfig):
         remove_columns=["text"],
     )
     data_collator = DataCollatorForLanguageModeling(
-        tokenizer=tokenizer, mlm=True, mlm_probability=cfg.model.mlm_probability
+        tokenizer=tokenizer, mlm=True, mlm_probability=args.mlm_probability
     )
 
     training_args = TrainingArguments(
         output_dir=tempfile.mkdtemp(),
         overwrite_output_dir=True,
-        num_train_epochs=cfg.model.epochs,
-        per_device_train_batch_size=cfg.model.batch_size,
+        num_train_epochs=args.epochs,
+        per_device_train_batch_size=args.batch_size,
         save_total_limit=2,
         prediction_loss_only=True,
-        fp16=cfg.model.fp16,
+        fp16=args.fp16,
         dataloader_num_workers=cpu_count(),
-        seed=cfg.seed,
+        seed=args.seed,
     )
 
     trainer = Trainer(
@@ -76,4 +79,67 @@ def train_roberta_base(cfg: DictConfig):
 
 
 if __name__ == "__main__":
-    train_roberta_base()
+    parser = argparse.ArgumentParser(description="Train RoBERTa base model for Nepali")
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="roberta-base-ne",
+        help="Output directory",
+    )
+    parser.add_argument(
+        "--dataset-portion",
+        type=str,
+        default="100%",
+        help="Portion of dataset to use",
+    )
+    parser.add_argument(
+        "--tokenizer-min-frequency",
+        type=int,
+        default=2,
+        help="Minimum frequency for tokenizer",
+    )
+    parser.add_argument(
+        "--special-tokens",
+        nargs="+",
+        default=["<s>", "<pad>", "</s>", "<unk>", "<mask>"],
+        help="Special tokens for tokenizer",
+    )
+    parser.add_argument(
+        "--model-architecture",
+        type=str,
+        default="roberta-base",
+        help="Model architecture",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=16,
+        help="Batch size",
+    )
+    parser.add_argument(
+        "--fp16",
+        action="store_true",
+        help="Use FP16 precision",
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=3,
+        help="Number of epochs",
+    )
+    parser.add_argument(
+        "--mlm-probability",
+        type=float,
+        default=0.15,
+        help="MLM probability",
+    )
+
+    args = parser.parse_args()
+    train_roberta_base(args)

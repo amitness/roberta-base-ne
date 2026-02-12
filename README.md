@@ -3,20 +3,22 @@
 Train `roberta-base` from scratch for Nepali language using the [CC-100](http://data.statmt.org/cc-100/) subset.
 
 ## Training
-To start the training, run:
+To start the training with default settings, run:
 ```shell
 python train.py
 ```
 
-The default configuration used is stored at `config/default.yaml`. You can also view all the configuration options using the `--help` command.
+To view all available configuration options, use the `--help` command:
 ```shell
 python train.py --help
 ```
 
-You can override any configuration from the CLI using the [hydra](https://hydra.cc/docs/intro) syntax. For example, to train using only 100 sentences for 1 epoch, run:
+You can override any default configuration from the command line. For example, to train for 1 epoch using 50% of the data, run:
 ```shell
-python train.py dataset.portion=100 model.epochs=1
+python train.py --dataset-portion "50%" --epochs 1
 ```
+
+All default values are defined in the script's argparse configuration.
 
 ## Citations
 Our model has been featured in the following papers and work:

@@ -1,5 +1,2 @@
 transformers[torch,tokenizers]==4.8.2
 datasets==1.9.0
-hydra-core==1.1.0
-omegaconf==2.1.0
-PyYAML>=5.1.*
